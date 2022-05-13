@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Memo Pad</title>
+</head>
+
+<body>
+    <h1 class="heading">Memo Pad</h1>
+    <input type="text" id="writeMemo" placeholder="Add memo" value="" /> 
+    <input type="button" value="save" onclick="saveMemo()" />
+    <hr>
+
+    <div>
+        メモ一覧
+        <p id="outputMemo"></p>
+    </div>
+    
+</body>
+
+<script>
+    function saveMemo() {
+        let writeMemo = document.getElementById('writeMemo');
+        // memoCountの数字の数え方だと文字列と認識され0, 1, 11 ,111, 1111....とに桁が1つづつ追加されてしまうので、
+        // parseInt(値, 進数)で10進数の数字として扱う
+        let memoCount = parseInt(localStorage.getItem("memoCount"), 10);
+
+        let t = new Date();
+        let tt;
+
+        let year = t.getFullYear();
+        let month = t.getMonth() + 1;
+        let day = t.getDate();
+        let hour = t.getHours();
+        let minute = t.getMinutes();
+        let second = t.getSeconds();
+        tt = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second;
+
+        let chunk = { memo: writeMemo.value, date: tt }
+        let chunkData = JSON.stringify(chunk);
+
+        // メモ内容がwriteMemo0のキーに保存される
+        if (!memoCount)
+            memoCount = 0;
+
+        // ローカルストレージに保存
+        // メモ内容がwriteMemo1のキーにに保存される
+        localStorage.setItem(`writeMemo${memoCount}`, chunkData);
+        console.log(localStorage);
+        localStorage.setItem("memoCount", memoCount + 1);
+
+        // メモを追加する時に日時を表示
+        outputMemo.innerHTML += `<div class="box"><p>${writeMemo.value}  [${tt}]</p><input type="button" value="delete" onclick="deleteMemo('writeMemo${memoCount}')" /></div>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let outputMemo = document.getElementById('outputMemo');
+        let memoCount = parseInt(localStorage.getItem("memoCount"), 10);
+        let count = 0;
+        let chunk;
+        while (count < memoCount) {
+            let chunkData = localStorage.getItem(`writeMemo${count}`);
+            if (chunkData != null) {
+                console.log(localStorage);
+                chunk = JSON.parse(chunkData);
+                outputMemo.innerHTML += `<div class="box"><p>${chunk.memo}  [${chunk.date}]</p><input type="button" value="delete" onclick="deleteMemo('writeMemo${count}')" /></div>`;
+            }
+            count++;
+        }
+        console.log(memoCount);
+    });
+    function deleteMemo(data){
+        localStorage.removeItem(data);
+        window.location.reload();
+
+    }
+</script>
+
+</html>
